@@ -1,0 +1,8 @@
+{
+  "task_id": "lru_cache",
+  "description": "Implement an LRU cache supporting O(1) get and put operations.",
+  "language": "python",
+  "test_file": "test_lru_cache.py",
+  "timeout": 5
+}
+

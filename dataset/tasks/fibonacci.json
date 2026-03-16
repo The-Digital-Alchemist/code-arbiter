@@ -1,0 +1,8 @@
+{
+  "task_id": "fibonacci_iterative",
+  "description": "Compute the n-th Fibonacci number using an efficient iterative implementation.",
+  "language": "python",
+  "test_file": "test_fibonacci_iterative.py",
+  "timeout": 3
+}
+

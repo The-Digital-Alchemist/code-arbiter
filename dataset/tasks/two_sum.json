@@ -1,0 +1,8 @@
+{
+  "task_id": "two_sum",
+  "description": "Given an array of integers and a target, return indices of the two numbers that add up to the target.",
+  "language": "python",
+  "test_file": "test_two_sum.py",
+  "timeout": 3
+}
+
