@@ -105,3 +105,17 @@ class StubGenerator(BaseGenerator):
             """
         ).strip()
 
+
+# Public re-exports of stubbed symbols so that tests can import them
+exec_globals: dict = {}
+exec(_STUB_IMPLEMENTATIONS["lru_cache"], exec_globals)
+LRUCache = exec_globals["LRUCache"]
+
+exec_globals = {}
+exec(_STUB_IMPLEMENTATIONS["fibonacci_iterative"], exec_globals)
+fib = exec_globals["fib"]
+
+exec_globals = {}
+exec(_STUB_IMPLEMENTATIONS["two_sum"], exec_globals)
+two_sum = exec_globals["two_sum"]
+
