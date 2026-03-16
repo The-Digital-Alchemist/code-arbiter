@@ -1,0 +1,12 @@
+**/__pycache__/
+/venv/
+/data/
+/logs/
+/models/
+/results/
+/tests/
+/docs/
+/examples/
+/scripts/
+/configs/
+/utils/
