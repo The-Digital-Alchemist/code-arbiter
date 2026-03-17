@@ -1,11 +1,17 @@
 from __future__ import annotations
 
-from typing import List
+from typing import List, Tuple
 
 from eval_engine.dataset.manager import Task, load_tasks
 from eval_engine.generation.stub_generator import StubGenerator
 from eval_engine.generation.base import GeneratedSolution
 from eval_engine.runner.local_runner import TestRunResult, run_tests_for_solution
+from eval_engine.metrics.engine import (
+    TaskMetrics,
+    AggregateMetrics,
+    compute_task_metrics,
+    compute_aggregate,
+)
 
 
 def run_stub(dataset_name: str | None = None) -> List[GeneratedSolution]:
@@ -51,4 +57,25 @@ def run_stub_with_tests(dataset_name: str | None = None) -> list[TestRunResult]:
     for solution in solutions:
         results.append(run_tests_for_solution(solution))
     return results
+
+
+def run_stub_with_metrics(
+    dataset_name: str | None = None,
+) -> Tuple[List[TaskMetrics], AggregateMetrics]:
+    """
+    Run stub generation, execute tests, and compute per-task and aggregate metrics.
+    """
+    solutions = run_stub(dataset_name)
+    test_results: list[TestRunResult] = []
+    paired: list[tuple[GeneratedSolution, TestRunResult]] = []
+    for solution in solutions:
+        result = run_tests_for_solution(solution)
+        test_results.append(result)
+        paired.append((solution, result))
+
+    # Pair metadata with test results for metrics computation.
+    meta_and_tests = [(s.metadata, r) for s, r in paired]
+    task_metrics = compute_task_metrics(meta_and_tests)
+    aggregate = compute_aggregate(task_metrics)
+    return task_metrics, aggregate
 
