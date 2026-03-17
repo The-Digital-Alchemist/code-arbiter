@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
-from eval_engine.generation.base import GeneratedSolution
+from generation.base import GeneratedSolution
 
 
 @dataclass(frozen=True)

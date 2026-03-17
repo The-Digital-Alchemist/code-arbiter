@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import List, Tuple
 
-from eval_engine.dataset.manager import Task, load_tasks
-from eval_engine.generation.stub_generator import StubGenerator
-from eval_engine.generation.base import GeneratedSolution
-from eval_engine.runner.local_runner import TestRunResult, run_tests_for_solution
-from eval_engine.metrics.engine import (
+from dataset.manager import Task, load_tasks
+from generation.stub_generator import StubGenerator
+from generation.base import GeneratedSolution
+from runner.local_runner import TestRunResult, run_tests_for_solution
+from metrics.engine import (
     TaskMetrics,
     AggregateMetrics,
     compute_task_metrics,

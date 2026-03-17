@@ -4,8 +4,8 @@ import textwrap
 import time
 from typing import Dict
 
-from eval_engine.dataset.manager import Task
-from eval_engine.generation.base import BaseGenerator, GeneratedSolution, GenerationMetadata
+from dataset.manager import Task
+from generation.base import BaseGenerator, GeneratedSolution, GenerationMetadata
 
 
 _STUB_IMPLEMENTATIONS: Dict[str, str] = {

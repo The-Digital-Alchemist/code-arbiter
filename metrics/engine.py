@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from statistics import mean
 from typing import Iterable, List
 
-from eval_engine.generation.base import GenerationMetadata
-from eval_engine.runner.local_runner import TestRunResult
+from generation.base import GenerationMetadata
+from runner.local_runner import TestRunResult
 
 
 @dataclass(frozen=True)

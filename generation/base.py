@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol
 
-from eval_engine.dataset.manager import Task
+from dataset.manager import Task
 
 
 @dataclass(frozen=True)
