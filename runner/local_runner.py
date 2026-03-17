@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 import tempfile
@@ -35,25 +36,11 @@ def run_tests_for_solution(solution: GeneratedSolution) -> TestRunResult:
         # Write the generated solution as solution.py
         (tmpdir / "solution.py").write_text(solution.code + "\n", encoding="utf-8")
 
-        # Create a small conftest that adds project root to sys.path so that
-        # the task's test module can import shared utilities if needed.
-        conftest = textwrap.dedent(
-            """
-            import sys
-            from pathlib import Path
-
-
-            # Ensure the project root is importable in case tests need it.
-            root = Path(__file__).resolve().parents[3]
-            if str(root) not in sys.path:
-                sys.path.insert(0, str(root))
-            """
-        ).strip()
-        (tmpdir / "conftest.py").write_text(conftest + "\n", encoding="utf-8")
+        eval_engine_root = Path(__file__).resolve().parents[1]
 
         # Copy or reference the appropriate test module from the dataset tests
         # directory by running pytest with -m path.
-        tests_dir = Path(__file__).resolve().parents[1] / "dataset" / "tests"
+        tests_dir = eval_engine_root / "dataset" / "tests"
         test_module = tests_dir / task.test_file
 
         cmd: List[str] = [
@@ -64,11 +51,21 @@ def run_tests_for_solution(solution: GeneratedSolution) -> TestRunResult:
             f"--rootdir={tmpdir}",
         ]
 
+        # Pass eval_engine root via PYTHONPATH so test imports resolve correctly.
+        env = os.environ.copy()
+        existing_pythonpath = env.get("PYTHONPATH", "")
+        env["PYTHONPATH"] = (
+            str(eval_engine_root) + os.pathsep + existing_pythonpath
+            if existing_pythonpath
+            else str(eval_engine_root)
+        )
+
         completed = subprocess.run(
             cmd,
             cwd=tmpdir,
             capture_output=True,
             text=True,
+            env=env,
         )
 
         return TestRunResult(
