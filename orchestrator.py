@@ -6,6 +6,7 @@ from dataset.manager import Task, load_tasks
 from generation.stub_generator import StubGenerator
 from generation.base import GeneratedSolution
 from runner.local_runner import TestRunResult, run_tests_for_solution
+from runner.docker_runner import DockerRunner
 from metrics.engine import (
     TaskMetrics,
     AggregateMetrics,
@@ -79,3 +80,22 @@ def run_stub_with_metrics(
     aggregate = compute_aggregate(task_metrics)
     return task_metrics, aggregate
 
+
+def run_docker_with_metrics(
+    dataset_name: str | None = None,
+) -> Tuple[List[TaskMetrics], AggregateMetrics]:
+    """
+    Run stub generation, execute tests inside isolated Docker containers,
+    and compute per-task and aggregate metrics.
+    """
+    solutions = run_stub(dataset_name)
+    runner = DockerRunner()
+    paired: list[tuple[GeneratedSolution, TestRunResult]] = []
+    for solution in solutions:
+        result = runner.run(solution)
+        paired.append((solution, result))
+
+    meta_and_tests = [(s.metadata, r) for s, r in paired]
+    task_metrics = compute_task_metrics(meta_and_tests)
+    aggregate = compute_aggregate(task_metrics)
+    return task_metrics, aggregate

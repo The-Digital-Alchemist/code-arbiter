@@ -14,6 +14,7 @@ class Task:
     language: str
     test_file: str
     timeout: int
+    docker_image: str = "eval-engine-python:latest"
 
 
 class DatasetError(Exception):
@@ -84,5 +85,6 @@ def _parse_task(raw: dict, *, source: str) -> Task:
         language=str(raw["language"]),
         test_file=str(raw["test_file"]),
         timeout=timeout,
+        docker_image=str(raw.get("docker_image", "eval-engine-python:latest")),
     )
 

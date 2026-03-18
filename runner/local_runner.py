@@ -51,13 +51,15 @@ def run_tests_for_solution(solution: GeneratedSolution) -> TestRunResult:
             f"--rootdir={tmpdir}",
         ]
 
-        # Pass eval_engine root via PYTHONPATH so test imports resolve correctly.
+        # Pass eval_engine root AND tmpdir via PYTHONPATH so tests can import
+        # both `generation.*` (eval_engine root) and `solution` (tmpdir).
         env = os.environ.copy()
+        extra_paths = os.pathsep.join([str(tmpdir), str(eval_engine_root)])
         existing_pythonpath = env.get("PYTHONPATH", "")
         env["PYTHONPATH"] = (
-            str(eval_engine_root) + os.pathsep + existing_pythonpath
+            extra_paths + os.pathsep + existing_pythonpath
             if existing_pythonpath
-            else str(eval_engine_root)
+            else extra_paths
         )
 
         completed = subprocess.run(
