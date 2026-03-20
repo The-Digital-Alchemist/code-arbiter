@@ -12,9 +12,16 @@ from runner.local_runner import TestRunResult
 class TaskMetrics:
     task_id: str
     model_name: str
-    passed: bool
+    status: str          # "PASS" or "FAIL"
+    tests_passed: int
+    tests_failed: int
+    failed_tests: List[str]
     latency_ms: float
     exit_code: int
+
+    @property
+    def passed(self) -> bool:
+        return self.status == "PASS"
 
 
 @dataclass(frozen=True)
@@ -28,16 +35,16 @@ class AggregateMetrics:
 def compute_task_metrics(
     results: Iterable[tuple[GenerationMetadata, TestRunResult]]
 ) -> List[TaskMetrics]:
-    """
-    Zip together generation metadata and test run results into per-task metrics.
-    """
     metrics: List[TaskMetrics] = []
     for meta, test in results:
         metrics.append(
             TaskMetrics(
                 task_id=test.task_id,
                 model_name=meta.model_name,
-                passed=test.passed,
+                status="PASS" if test.passed else "FAIL",
+                tests_passed=test.tests_passed,
+                tests_failed=test.tests_failed,
+                failed_tests=list(test.failed_tests),
                 latency_ms=meta.latency_ms,
                 exit_code=test.exit_code,
             )
@@ -57,13 +64,9 @@ def compute_aggregate(metrics: Iterable[TaskMetrics]) -> AggregateMetrics:
         )
 
     passed_tasks = sum(1 for m in metrics_list if m.passed)
-    pass_rate = passed_tasks / total
-    average_latency = mean(m.latency_ms for m in metrics_list)
-
     return AggregateMetrics(
         total_tasks=total,
         passed_tasks=passed_tasks,
-        pass_rate=pass_rate,
-        average_latency_ms=average_latency,
+        pass_rate=passed_tasks / total,
+        average_latency_ms=mean(m.latency_ms for m in metrics_list),
     )
-
