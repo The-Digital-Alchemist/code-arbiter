@@ -7,7 +7,7 @@ import time
 from openai import OpenAI
 
 from dataset.manager import Task
-from generation.base import BaseGenerator, GeneratedSolution, GenerationMetadata
+from generation.base import BaseGenerator, GeneratedSolution, GenerationMetadata, build_prompt
 
 
 def _strip_code_fences(text: str) -> str:
@@ -31,10 +31,7 @@ class OpenAIGenerator:
         self._client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
     def generate(self, task: Task) -> GeneratedSolution:
-        prompt = (
-            f"{task.description}\n\n"
-            "Return ONLY the code. No explanation, no markdown, no extra text."
-        )
+        prompt = build_prompt(task)
 
         start = time.perf_counter()
         response = self._client.chat.completions.create(

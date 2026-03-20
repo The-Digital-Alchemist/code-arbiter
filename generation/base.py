@@ -25,6 +25,24 @@ class GeneratedSolution:
     metadata: GenerationMetadata
 
 
+def build_prompt(task: Task) -> str:
+    """
+    Construct the prompt sent to a generator.
+
+    If the task has a solution_template, the model is asked to complete it.
+    This keeps the description natural (no leaked function names) while still
+    giving the model the correct signature to implement.
+    """
+    if task.solution_template:
+        return (
+            f"{task.description}\n\n"
+            f"Complete the following Python template. "
+            f"Return only the completed code, no explanation:\n\n"
+            f"{task.solution_template}"
+        )
+    return f"{task.description}\n\nReturn only the code, no explanation."
+
+
 class BaseGenerator(Protocol):
     """Abstract interface for all code generators (LLMs, agents, stubs)."""
 
