@@ -22,6 +22,38 @@ class TestRunResult:
     tests_passed: int = 0
     tests_failed: int = 0
     failed_tests: List[str] = field(default_factory=list)
+    failure_type: str = "none"  # "none" | "syntax_error" | "import_error" | "timeout" | "logic_error" | "runtime_error"
+
+
+def _classify_failure(output: str, exit_code: int) -> str:
+    """
+    Classify why a test run failed based on pytest output and exit code.
+
+    Categories:
+      - "syntax_error"  — model returned unparseable code
+      - "import_error"  — wrong function/class name, missing symbol
+      - "timeout"       — execution exceeded the time limit
+      - "logic_error"   — code ran but assertions failed
+      - "runtime_error" — code raised an unexpected exception during execution
+      - "none"          — no failure (passed)
+    """
+    if exit_code == 0:
+        return "none"
+
+    if "SyntaxError" in output:
+        return "syntax_error"
+    if "ImportError" in output or "cannot import name" in output:
+        return "import_error"
+    if "TimeoutExpired" in output or "timeout" in output.lower():
+        return "timeout"
+    # Match "E   RuntimeError: ..." lines — pytest's format for unhandled exceptions.
+    # This avoids false positives from pytest.raises(ValueError) in test source.
+    if re.search(r"^E\s+(RuntimeError|TypeError|NameError|AttributeError|ZeroDivisionError):", output, re.MULTILINE):
+        return "runtime_error"
+    if "AssertionError" in output:
+        return "logic_error"
+
+    return "logic_error"  # default for non-zero exit with failed tests
 
 
 def _parse_pytest_output(output: str) -> tuple[int, int, List[str]]:
@@ -98,6 +130,7 @@ def run_tests_for_solution(solution: GeneratedSolution) -> TestRunResult:
 
         output = completed.stdout + completed.stderr
         tests_passed, tests_failed, failed_tests = _parse_pytest_output(output)
+        failure_type = _classify_failure(output, completed.returncode)
 
         return TestRunResult(
             task_id=task.task_id,
@@ -108,4 +141,5 @@ def run_tests_for_solution(solution: GeneratedSolution) -> TestRunResult:
             tests_passed=tests_passed,
             tests_failed=tests_failed,
             failed_tests=failed_tests,
+            failure_type=failure_type,
         )

@@ -18,6 +18,7 @@ class TaskMetrics:
     failed_tests: List[str]
     latency_ms: float
     exit_code: int
+    failure_type: str = "none"
 
     @property
     def passed(self) -> bool:
@@ -47,6 +48,7 @@ def compute_task_metrics(
                 failed_tests=list(test.failed_tests),
                 latency_ms=meta.latency_ms,
                 exit_code=test.exit_code,
+                failure_type=test.failure_type,
             )
         )
     return metrics
