@@ -1,0 +1,10 @@
+{
+  "task_id": "fix_two_sum",
+  "description": "The following two_sum function has a bug: it can pair an element with itself (uses the same index twice). Fix the bug so no index is used twice.",
+  "language": "python",
+  "test_file": "test_fix_two_sum.py",
+  "timeout": 10,
+  "docker_image": "eval-engine-python:latest",
+  "task_type": "bugfix",
+  "solution_template": "def two_sum(nums, target):\n    for i in range(len(nums)):\n        for j in range(len(nums)):  # bug here\n            if nums[i] + nums[j] == target:\n                return (i, j)\n    return None"
+}

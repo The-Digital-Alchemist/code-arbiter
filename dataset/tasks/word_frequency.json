@@ -1,0 +1,9 @@
+{
+  "task_id": "word_frequency",
+  "description": "Given a string, return a dictionary of each word mapped to its frequency. Words are split by spaces and are case-sensitive. Name the function word_frequency.",
+  "language": "python",
+  "test_file": "test_word_frequency.py",
+  "timeout": 5,
+  "docker_image": "eval-engine-python:latest",
+  "solution_template": "def word_frequency(text: str) -> dict[str, int]:\n    pass"
+}

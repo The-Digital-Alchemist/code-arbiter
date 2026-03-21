@@ -1,0 +1,9 @@
+{
+  "task_id": "flatten_deep",
+  "description": "Flatten an arbitrarily deeply nested list into a single flat list. Unlike a one-level flatten, this must handle any depth of nesting. Name the function flatten_deep.",
+  "language": "python",
+  "test_file": "test_flatten_deep.py",
+  "timeout": 5,
+  "docker_image": "eval-engine-python:latest",
+  "task_type": "implement"
+}

@@ -1,0 +1,9 @@
+{
+  "task_id": "count_vowels",
+  "description": "Count the number of vowels (a, e, i, o, u) in a string, case-insensitive. Name the function count_vowels.",
+  "language": "python",
+  "test_file": "test_count_vowels.py",
+  "timeout": 5,
+  "docker_image": "eval-engine-python:latest",
+  "solution_template": "def count_vowels(s: str) -> int:\n    pass"
+}

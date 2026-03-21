@@ -1,0 +1,9 @@
+{
+  "task_id": "max_subarray",
+  "description": "Find the contiguous subarray with the largest sum and return that sum. Name the function max_subarray.",
+  "language": "python",
+  "test_file": "test_max_subarray.py",
+  "timeout": 5,
+  "docker_image": "eval-engine-python:latest",
+  "solution_template": "def max_subarray(nums: list[int]) -> int:\n    pass"
+}

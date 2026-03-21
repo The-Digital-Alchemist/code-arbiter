@@ -1,0 +1,9 @@
+{
+  "task_id": "binary_search_count",
+  "description": "Given a sorted list of integers and a target, return the number of times the target appears in the list. Must run in O(log n) time. Name the function binary_search_count.",
+  "language": "python",
+  "test_file": "test_binary_search_count.py",
+  "timeout": 10,
+  "docker_image": "eval-engine-python:latest",
+  "task_type": "implement"
+}

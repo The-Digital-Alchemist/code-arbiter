@@ -1,0 +1,9 @@
+{
+  "task_id": "detect_suspicious_transactions",
+  "description": "Given a list of transactions, each a dict with keys 'id' (str), 'sender' (str), 'amount' (float), and 'timestamp' (int, unix seconds), return a list of transaction ids that are suspicious. A transaction is suspicious if the same sender makes 3 or more transfers each under 100.0 within any 60-second window. Name the function detect_suspicious.",
+  "language": "python",
+  "test_file": "test_detect_suspicious_transactions.py",
+  "timeout": 10,
+  "docker_image": "eval-engine-python:latest",
+  "task_type": "implement"
+}

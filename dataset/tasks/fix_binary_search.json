@@ -1,0 +1,10 @@
+{
+  "task_id": "fix_binary_search",
+  "description": "The following binary search has a bug: when the target is larger than the middle element, lo is set to mid instead of mid+1, causing an infinite loop. Fix it.",
+  "language": "python",
+  "test_file": "test_fix_binary_search.py",
+  "timeout": 10,
+  "docker_image": "eval-engine-python:latest",
+  "task_type": "bugfix",
+  "solution_template": "def binary_search(nums, target):\n    lo, hi = 0, len(nums) - 1\n    while lo <= hi:\n        mid = (lo + hi) // 2\n        if nums[mid] == target:\n            return mid\n        elif nums[mid] < target:\n            lo = mid  # bug: should be mid + 1\n        else:\n            hi = mid - 1\n    return -1"
+}

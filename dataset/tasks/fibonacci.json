@@ -1,8 +1,9 @@
 {
   "task_id": "fibonacci_iterative",
-  "description": "Compute the n-th Fibonacci number using an efficient iterative implementation.",
+  "description": "Implement fib(n). Return the n-th Fibonacci number. The sequence starts 0, 1, 1, 2, 3, 5... Raise ValueError for negative inputs.",
   "language": "python",
   "test_file": "test_fibonacci_iterative.py",
-  "timeout": 3
+  "timeout": 5,
+  "docker_image": "eval-engine-python:latest",
+  "solution_template": "def fib(n: int) -> int:\n    pass"
 }
-

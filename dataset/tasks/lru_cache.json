@@ -1,8 +1,9 @@
 {
   "task_id": "lru_cache",
-  "description": "Implement an LRU cache supporting O(1) get and put operations.",
+  "description": "Implement an LRU cache. Name the class LRUCache.",
   "language": "python",
   "test_file": "test_lru_cache.py",
-  "timeout": 5
+  "timeout": 10,
+  "docker_image": "eval-engine-python:latest",
+  "solution_template": "class LRUCache:\n    def __init__(self, capacity: int):\n        pass\n\n    def get(self, key: int) -> int:\n        pass\n\n    def put(self, key: int, value: int) -> None:\n        pass"
 }
-
