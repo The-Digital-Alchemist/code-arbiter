@@ -1,6 +1,42 @@
-# AI Code Generation Evaluation Engine
+# AI Code Arbiter
 
-A benchmarking tool that sends coding tasks to an AI model, runs the generated code against a real test suite, classifies failures by type, and saves a structured report. It answers three questions: what failed, why it failed, and what that reveals about the model.
+**Evaluates AI-generated code by executing it, not simply trusting it.**
+
+Stop trusting AI-generated code.
+
+This system **executes it.**
+
+It sends coding tasks to AI models, runs the generated code in a sandbox, and verifies correctness using real test suites.
+
+No guessing. No vibes. Only execution-based truth.
+
+It doesn't just tell you what failed, it tells you why it failed and what that reveals about the model.
+
+## Why this matters
+
+Most AI tools evaluate models based on outputs that *look correct*.
+
+This system evaluates models based on whether their code actually works.
+
+That difference exposes real weaknesses:
+
+- Models that pass standard problems but fail on reasoning tasks
+- Models that produce correct logic but break on edge cases
+- Models that detect patterns but fail to propagate effects across related data
+
+Example:
+A model can detect suspicious transactions —
+but fail to flag all transactions within the same time window.
+
+This is not a syntax issue. It's a reasoning failure.
+
+## Key Features
+
+- Execution-based validation (not prompt evaluation)
+- Docker sandbox (safe, isolated code execution)
+- Failure classification (logic, edge case, temporal reasoning)
+- Multi-run support (detects non-determinism)
+- Structured reporting (what failed, why, and what it means)
 
 ---
 
@@ -91,7 +127,9 @@ python main.py run --provider stub
 
 ---
 
-## Sample report — OpenAI gpt-4o-mini
+## Example: Real model failure analysis
+
+Report excerpt (OpenAI `gpt-4o-mini`):
 
 ```
 ============================================================
@@ -162,6 +200,8 @@ python main.py run --provider stub
 ============================================================
 ```
 
+**Takeaway:** The model succeeds on standard algorithmic tasks but fails on temporal reasoning and edge cases — indicating strong pattern recall but limited generalization.
+
 ---
 
 ## Adding a task
@@ -189,3 +229,15 @@ def test_basic():
 ```
 
 The engine picks it up automatically.
+
+---
+
+## Future work
+
+Planned or exploratory directions:
+
+- **Agentic coding evaluation** — multi-turn sessions, tool use (search, terminal, edits), and end-to-end “agent completes a ticket” runs with execution-based checks at each step.
+- **Real-world problem solving** — tasks with partial specs, legacy codebases, debugging scenarios, and integration-style tests that mirror how software is actually built and maintained.
+- **Broader task coverage** — security-sensitive code, performance constraints, concurrency, and cross-language or polyglot pipelines.
+- **Richer sandboxes** — reproducible dependency graphs, resource limits tuned per task, and optional network or service mocks for API-heavy problems.
+- **Comparative and longitudinal studies** — model/version matrices, regression tracking across releases, and calibration against human baselines where available.
