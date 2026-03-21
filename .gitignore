@@ -1,13 +1,14 @@
 **/__pycache__/
+**/*.pyc
 /.venv/
+/reports/
 /data/
 /logs/
 /models/
 /results/
-/tests/
 /docs/
 /examples/
 /scripts/
 /configs/
 /utils/
-**.env
+*.env
