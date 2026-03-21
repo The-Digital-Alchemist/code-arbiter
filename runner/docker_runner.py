@@ -8,7 +8,7 @@ import docker
 import docker.errors
 
 from generation.base import GeneratedSolution
-from runner.local_runner import TestRunResult
+from runner.local_runner import TestRunResult, _parse_pytest_output, _classify_failure
 
 
 class DockerRunner:
@@ -90,12 +90,18 @@ class DockerRunner:
             result = container.wait(timeout=timeout + 10)
             exit_code = result["StatusCode"]
             logs = container.logs(stdout=True, stderr=True).decode("utf-8", errors="replace")
+            tests_passed, tests_failed, failed_tests = _parse_pytest_output(logs)
+            failure_type = _classify_failure(logs, exit_code)
             return TestRunResult(
                 task_id=task_id,
                 exit_code=exit_code,
                 passed=exit_code == 0,
                 stdout=logs,
                 stderr="",
+                tests_passed=tests_passed,
+                tests_failed=tests_failed,
+                failed_tests=failed_tests,
+                failure_type=failure_type,
             )
         except Exception as exc:
             container.kill()
