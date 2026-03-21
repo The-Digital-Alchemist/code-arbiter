@@ -16,6 +16,49 @@ def cli():
 
 
 @cli.command()
+@click.argument("task_id")
+@click.option("--provider", "-p", default=None, help="Generator provider: openai, claude, local, stub")
+@click.option("--docker", is_flag=True, default=False, help="Run tests inside Docker sandbox")
+def inspect(task_id, provider, docker):
+    """Generate and run a single task — show generated code and full pytest output."""
+    from dataset.manager import load_tasks
+    from generation.factory import get_generator
+    from runner.local_runner import run_tests_for_solution
+    from runner.docker_runner import DockerRunner
+
+    tasks = {t.task_id: t for t in load_tasks()}
+    if task_id not in tasks:
+        click.echo(f"Unknown task '{task_id}'. Available: {', '.join(sorted(tasks))}")
+        return
+
+    task = tasks[task_id]
+    generator = get_generator(provider)
+
+    click.echo(f"\n{'='*60}")
+    click.echo(f"TASK:     {task.task_id}")
+    click.echo(f"PROMPT:   {task.description}")
+    click.echo(f"{'='*60}\n")
+
+    click.echo("Generating code...")
+    solution = generator.generate(task)
+
+    click.echo(f"\n--- GENERATED CODE ({solution.metadata.model_name}, {solution.metadata.latency_ms:.0f}ms) ---\n")
+    click.echo(solution.code)
+
+    click.echo(f"\n--- RUNNING TESTS ({'Docker' if docker else 'Local'}) ---\n")
+    runner = DockerRunner() if docker else None
+    result = runner.run(solution) if runner else run_tests_for_solution(solution)
+
+    click.echo(result.stdout)
+    if result.stderr:
+        click.echo("STDERR:")
+        click.echo(result.stderr)
+
+    verdict = "PASS" if result.passed else f"FAIL [{result.failure_type}]"
+    click.echo(f"\n--- VERDICT: {verdict} | passed={result.tests_passed} failed={result.tests_failed} ---")
+
+
+@cli.command()
 @click.option("--provider", "-p", default=None, help="Generator provider: openai, claude, stub")
 @click.option("--docker", is_flag=True, default=False, help="Run tests inside Docker sandbox")
 @click.option("--json-output", "json_output", is_flag=True, default=False, help="Output raw JSON")

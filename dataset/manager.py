@@ -16,6 +16,7 @@ class Task:
     timeout: int
     docker_image: str = "eval-engine-python:latest"
     solution_template: str = ""
+    task_type: str = "implement"  # "implement" | "bugfix"
 
 
 class DatasetError(Exception):
@@ -88,5 +89,6 @@ def _parse_task(raw: dict, *, source: str) -> Task:
         timeout=timeout,
         docker_image=str(raw.get("docker_image", "eval-engine-python:latest")),
         solution_template=str(raw.get("solution_template", "")),
+        task_type=str(raw.get("task_type", "implement")),
     )
 
