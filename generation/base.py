@@ -29,16 +29,15 @@ def build_prompt(task: Task) -> str:
     """
     Construct the prompt sent to a generator.
 
-    If the task has a solution_template, the model is asked to complete it.
-    This keeps the description natural (no leaked function names) while still
-    giving the model the correct signature to implement.
+    - bugfix tasks: give the model the broken code and ask it to fix it
+    - implement tasks: minimal description only — no signatures, no hints
     """
-    if task.solution_template:
+    if task.task_type == "bugfix" and task.solution_template:
         return (
             f"{task.description}\n\n"
-            f"Complete the following Python template. "
-            f"Return only the completed code, no explanation:\n\n"
-            f"{task.solution_template}"
+            f"Buggy code:\n\n"
+            f"{task.solution_template}\n\n"
+            f"Return only the corrected code, no explanation."
         )
     return f"{task.description}\n\nReturn only the code, no explanation."
 

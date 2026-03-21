@@ -36,7 +36,11 @@ def get_generator(provider: str | None = None) -> BaseGenerator:
         from generation.stub_generator import StubGenerator
         return StubGenerator()
 
+    if resolved == "local":
+        from generation.local_generator import LocalGenerator
+        return LocalGenerator()
+
     raise ValueError(
         f"Unknown provider {resolved!r}. "
-        "Set GENERATOR_PROVIDER to 'claude', 'openai', or 'stub'."
+        "Set GENERATOR_PROVIDER to 'claude', 'openai', 'local', or 'stub'."
     )
