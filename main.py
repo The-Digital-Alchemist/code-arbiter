@@ -18,7 +18,7 @@ def cli():
 @cli.command()
 @click.argument("task_id")
 @click.option("--provider", "-p", default=None, help="Generator provider: openai, claude, local, stub")
-@click.option("--docker", is_flag=True, default=False, help="Run tests inside Docker sandbox")
+@click.option("--docker/--no-docker", default=True, help="Run tests inside Docker sandbox (default: on)")
 def inspect(task_id, provider, docker):
     """Generate and run a single task — show generated code and full pytest output."""
     from dataset.manager import load_tasks
@@ -60,7 +60,7 @@ def inspect(task_id, provider, docker):
 
 @cli.command()
 @click.option("--provider", "-p", default=None, help="Generator provider: openai, claude, stub")
-@click.option("--docker", is_flag=True, default=False, help="Run tests inside Docker sandbox")
+@click.option("--docker/--no-docker", default=True, help="Run tests inside Docker sandbox (default: on)")
 @click.option("--json-output", "json_output", is_flag=True, default=False, help="Output raw JSON")
 def run(provider, docker, json_output):
     """Run all tasks once and report PASS/FAIL per task."""
@@ -115,7 +115,7 @@ def run(provider, docker, json_output):
 @cli.command()
 @click.option("--provider", "-p", default=None, help="Generator provider: openai, claude, stub")
 @click.option("--runs", "-n", default=5, show_default=True, help="Number of runs per task")
-@click.option("--docker", is_flag=True, default=False, help="Run tests inside Docker sandbox")
+@click.option("--docker/--no-docker", default=True, help="Run tests inside Docker sandbox (default: on)")
 @click.option("--json-output", "json_output", is_flag=True, default=False, help="Output raw JSON")
 def multi(provider, runs, docker, json_output):
     """Run each task N times and report pass rates."""
@@ -159,7 +159,7 @@ def multi(provider, runs, docker, json_output):
 
 @cli.command()
 @click.option("--provider", "-p", default=None, help="Generator provider: openai, claude, local, stub")
-@click.option("--docker", is_flag=True, default=False, help="Run tests inside Docker sandbox")
+@click.option("--docker/--no-docker", default=True, help="Run tests inside Docker sandbox (default: on)")
 @click.option("--insights", default=None, help="Provider to use for LLM-generated insights (optional)")
 @click.option("--output", "-o", default=None, help="Write report to file instead of stdout")
 def report(provider, docker, insights, output):
