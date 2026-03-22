@@ -127,80 +127,54 @@ python main.py run --provider stub
 
 ---
 
-## Example: Real model failure analysis
+## Model comparison — `gpt-4o-mini` vs `gpt-5.4-mini`
 
-Report excerpt (OpenAI `gpt-4o-mini`):
+Same 19 tasks, same test suite, same sandbox.
 
-```
-============================================================
-  BENCHMARK REPORT
-============================================================
+### Summary
 
-  SECTION 1 - SUMMARY
-------------------------------------------------------------
+| Metric | gpt-4o-mini | gpt-5.4-mini |
+|---|---|---|
+| Pass rate | 89.5% (17/19) | 89.5% (17/19) |
+| Avg latency | 2367ms | 1493ms |
+| Syntax errors | 0 | 1 (non-deterministic) |
+| Logic errors | 2 | 1 |
 
-  Model:        gpt-4o-mini
-  Provider:     openai
-  Tasks run:    19
-  Passed:       17/19
-  Pass rate:    89.5%
-  Avg latency:  2367ms
-  Generated:    2026-03-21 14:16
+### Per-task breakdown
 
-  SECTION 2 - FAILURE BREAKDOWN
-------------------------------------------------------------
+| Task | gpt-4o-mini | gpt-5.4-mini |
+|---|---|---|
+| fibonacci_iterative | PASS | PASS |
+| two_sum | PASS | PASS |
+| lru_cache | PASS | FAIL (syntax_error — flaky, passes on re-run) |
+| binary_search | PASS | PASS |
+| valid_parentheses | PASS | PASS |
+| max_subarray | PASS | PASS |
+| is_palindrome | PASS | PASS |
+| is_prime | PASS | PASS |
+| flatten_list | PASS | PASS |
+| word_frequency | PASS | PASS |
+| group_anagrams | PASS | PASS |
+| binary_search_count | PASS | PASS |
+| flatten_deep | PASS | PASS |
+| fix_two_sum | PASS | PASS |
+| fix_binary_search | PASS | PASS |
+| merge_sorted_arrays | PASS | PASS |
+| count_vowels | PASS | PASS |
+| detect_suspicious_transactions | FAIL (temporal_reasoning_error) | PASS |
+| two_sum_all_pairs | FAIL (edge_case_error) | FAIL (edge_case_error) |
 
-  Failures (2):
-    logic_error: 2
+### Failure analysis
 
-  Refined:
-    edge_case_error: 1
-    temporal_reasoning_error: 1
+| Task | gpt-4o-mini | gpt-5.4-mini |
+|---|---|---|
+| `detect_suspicious_transactions` | Flags the triggering transaction but misses earlier ones in the same time window — temporal reasoning failure | Passes |
+| `lru_cache` | Passes | Generated invalid Python syntax on this run. Passes cleanly on re-run — non-deterministic, not a real gap |
+| `two_sum_all_pairs` | Returns wrong result for empty input | Returns wrong result for empty input |
 
-  SECTION 3 - TASK-LEVEL FAILURES
-------------------------------------------------------------
+### Key insight
 
-  detect_suspicious_transactions:
-    failure_type:   temporal_reasoning_error
-    raw_type:       logic_error
-    tests_passed:   3
-    tests_failed:   5
-    pattern:        Fails to reason correctly across time windows
-    failing_tests:
-      - test_no_suspicious_only_two
-      - test_only_suspicious_sender_flagged
-      - test_sliding_window_not_just_first_60s
-      - test_multiple_windows_same_sender
-
-  two_sum_all_pairs:
-    failure_type:   edge_case_error
-    raw_type:       logic_error
-    tests_passed:   9
-    tests_failed:   1
-    pattern:        Incorrect handling of empty or no-result cases
-    failing_tests:
-      - test_no_pairs
-
-  SECTION 4 - KEY INSIGHTS
-------------------------------------------------------------
-
-  [detect_suspicious_transactions]
-  The model identifies that a suspicious pattern exists but fails
-  to retroactively flag earlier events that belong to the same
-  window. This is a weakness in multi-entity temporal reasoning:
-  the model processes events sequentially and marks only the
-  triggering event, not all events that contributed to the trigger.
-
-  [two_sum_all_pairs]
-  The model's logic is correct for the happy path but breaks on
-  edge cases (empty inputs, no valid result). This is a common
-  failure mode where the model follows the normal example in
-  the prompt and does not reason about boundary conditions.
-
-============================================================
-```
-
-**Takeaway:** The model succeeds on standard algorithmic tasks but fails on temporal reasoning and edge cases — indicating strong pattern recall but limited generalization.
+Same headline score, but the failures are different. `gpt-5.4-mini` solved the temporal reasoning task that `gpt-4o-mini` couldn't, and runs 37% faster. The only shared failure — `two_sum_all_pairs` empty input — is consistent across both, pointing to a systematic edge case blind spot that neither model handles reliably.
 
 ---
 
