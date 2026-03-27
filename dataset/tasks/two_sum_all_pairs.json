@@ -1,6 +1,6 @@
 {
   "task_id": "two_sum_all_pairs",
-  "description": "Given a list of integers and a target, return ALL unique pairs of indices (i, j) where i < j and nums[i] + nums[j] equals the target. Return a sorted list of tuples. Name the function two_sum_all_pairs.",
+  "description": "Given a list of integers and a target, return ALL unique pairs of indices (i, j) where i < j and nums[i] + nums[j] equals the target. Return a sorted list of tuples. If no pairs exist or the input is empty, return an empty list []. Name the function two_sum_all_pairs.",
   "language": "python",
   "test_file": "test_two_sum_all_pairs.py",
   "timeout": 10,
