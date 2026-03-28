@@ -1,9 +1,0 @@
-{
-  "task_id": "is_palindrome",
-  "description": "Return True if a string reads the same forwards and backwards, ignoring case. Name the function is_palindrome.",
-  "language": "python",
-  "test_file": "test_is_palindrome.py",
-  "timeout": 5,
-  "docker_image": "eval-engine-python:latest",
-  "solution_template": "def is_palindrome(s: str) -> bool:\n    pass"
-}

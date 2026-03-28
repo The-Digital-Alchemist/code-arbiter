@@ -1,9 +1,0 @@
-{
-  "task_id": "two_sum",
-  "description": "Given a list of integers and a target, return the indices of two numbers that add up to the target. Return None if no solution exists. Name the function two_sum.",
-  "language": "python",
-  "test_file": "test_two_sum.py",
-  "timeout": 5,
-  "docker_image": "eval-engine-python:latest",
-  "solution_template": "def two_sum(nums: list[int], target: int) -> tuple[int, int] | None:\n    pass"
-}

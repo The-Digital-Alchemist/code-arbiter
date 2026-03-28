@@ -1,9 +1,0 @@
-{
-  "task_id": "is_prime",
-  "description": "Return True if the integer is prime. Numbers less than 2 are not prime. Name the function is_prime.",
-  "language": "python",
-  "test_file": "test_is_prime.py",
-  "timeout": 5,
-  "docker_image": "eval-engine-python:latest",
-  "solution_template": "def is_prime(n: int) -> bool:\n    pass"
-}
