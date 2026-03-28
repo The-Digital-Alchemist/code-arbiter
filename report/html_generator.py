@@ -347,3 +347,162 @@ def generate_html_report(
 </body>
 </html>
 """
+
+
+def generate_html_comparison_report(
+    metrics_a: List[TaskMetrics],
+    metrics_b: List[TaskMetrics],
+    aggregate_a: AggregateMetrics,
+    aggregate_b: AggregateMetrics,
+    provider_a: str,
+    provider_b: str,
+    model_a: str,
+    model_b: str,
+) -> str:
+    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    by_a = {m.task_id: m for m in metrics_a}
+    by_b = {m.task_id: m for m in metrics_b}
+    all_tasks = sorted(set(by_a) | set(by_b))
+
+    color_a = _pass_rate_color(aggregate_a.pass_rate)
+    color_b = _pass_rate_color(aggregate_b.pass_rate)
+
+    lat_a = f"{aggregate_a.average_latency_ms:.0f}ms" if aggregate_a.average_latency_ms else "n/a"
+    lat_b = f"{aggregate_b.average_latency_ms:.0f}ms" if aggregate_b.average_latency_ms else "n/a"
+
+    # --- Summary cards ---
+    cards_html = f"""
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px;">
+      <div style="background:#1e2130;border:1px solid #2d3148;border-radius:10px;padding:20px 24px;">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.8px;color:#64748b;margin-bottom:12px;">{model_a}</div>
+        <div style="display:flex;gap:24px;">
+          <div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Pass Rate</div>
+            <div style="font-size:26px;font-weight:700;color:{'#34d399' if color_a=='green' else '#fbbf24' if color_a=='yellow' else '#f87171'};">{aggregate_a.pass_rate:.1%}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Passed</div>
+            <div style="font-size:26px;font-weight:700;color:#f8fafc;">{aggregate_a.passed_tasks}/{aggregate_a.total_tasks}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Avg Latency</div>
+            <div style="font-size:26px;font-weight:700;color:#f8fafc;">{lat_a}</div>
+          </div>
+        </div>
+      </div>
+      <div style="background:#1e2130;border:1px solid #2d3148;border-radius:10px;padding:20px 24px;">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.8px;color:#64748b;margin-bottom:12px;">{model_b}</div>
+        <div style="display:flex;gap:24px;">
+          <div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Pass Rate</div>
+            <div style="font-size:26px;font-weight:700;color:{'#34d399' if color_b=='green' else '#fbbf24' if color_b=='yellow' else '#f87171'};">{aggregate_b.pass_rate:.1%}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Passed</div>
+            <div style="font-size:26px;font-weight:700;color:#f8fafc;">{aggregate_b.passed_tasks}/{aggregate_b.total_tasks}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:4px;">Avg Latency</div>
+            <div style="font-size:26px;font-weight:700;color:#f8fafc;">{lat_b}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+
+    # --- Comparison table ---
+    def cell(m: Optional[TaskMetrics]) -> str:
+        if m is None:
+            return '<span style="color:#334155;">N/A</span>'
+        if m.passed:
+            return f'<span class="badge badge-pass">PASS</span> <span style="color:#64748b;font-size:11px;">{m.latency_ms:.0f}ms</span>'
+        category, _ = _classify_refined(m.failed_tests, m.task_id)
+        return f'<span class="badge badge-fail">FAIL</span> <span class="pill">{category}</span>'
+
+    rows = []
+    for task_id in all_tasks:
+        ma = by_a.get(task_id)
+        mb = by_b.get(task_id)
+        a_pass = ma.passed if ma else False
+        b_pass = mb.passed if mb else False
+
+        if a_pass and not b_pass:
+            row_style = 'style="background:rgba(52,211,153,0.04);"'
+            diff = f'<span style="color:#34d399;font-size:11px;font-weight:600;">{provider_a} only</span>'
+        elif b_pass and not a_pass:
+            row_style = 'style="background:rgba(248,113,113,0.04);"'
+            diff = f'<span style="color:#60a5fa;font-size:11px;font-weight:600;">{provider_b} only</span>'
+        else:
+            row_style = ''
+            diff = '<span style="color:#334155;font-size:11px;">—</span>'
+
+        rows.append(f"""
+        <tr {row_style}>
+          <td style="font-family:monospace;font-size:12px;color:#cbd5e1;">{task_id}</td>
+          <td>{cell(ma)}</td>
+          <td>{cell(mb)}</td>
+          <td>{diff}</td>
+        </tr>""")
+
+    table_html = f"""
+    <div class="section-title">Task-by-Task</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th>{model_a[:28]}</th>
+          <th>{model_b[:28]}</th>
+          <th>Diff</th>
+        </tr>
+      </thead>
+      <tbody>{"".join(rows)}</tbody>
+    </table>
+    """
+
+    # --- Divergent tasks ---
+    diffs = [
+        t for t in all_tasks
+        if by_a.get(t) and by_b.get(t) and by_a[t].passed != by_b[t].passed
+    ]
+
+    if diffs:
+        items = []
+        for task_id in diffs:
+            ma, mb = by_a[task_id], by_b[task_id]
+            winner = model_a if ma.passed else model_b
+            loser_m = mb if ma.passed else ma
+            category, desc = _classify_refined(loser_m.failed_tests, task_id)
+            items.append(f"""
+      <div class="insight-item">
+        <div class="insight-task">{task_id}</div>
+        <div style="font-size:12px;color:#60a5fa;margin-bottom:4px;">{winner} passes — other fails</div>
+        <div class="insight-text">{desc}</div>
+      </div>""")
+
+        divergent_html = f"""
+    <div class="section-title">Where They Differ</div>
+    <div class="insights-block">{"".join(items)}</div>
+    """
+    else:
+        divergent_html = ""
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comparison — {model_a} vs {model_b}</title>
+  <style>{_CSS}</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Model Comparison</h1>
+    <div class="subtitle">{model_a} &nbsp;vs&nbsp; {model_b} &nbsp;·&nbsp; {now}</div>
+    {cards_html}
+    {table_html}
+    {divergent_html}
+    <div class="footer">AI Code Generation Evaluation Engine</div>
+  </div>
+</body>
+</html>
+"""
