@@ -214,5 +214,51 @@ def report(provider, docker, insights, output, html_output):
         click.echo("\n" + content)
 
 
+@cli.command()
+@click.argument("provider_a")
+@click.argument("provider_b")
+@click.option("--docker/--no-docker", default=True, help="Run tests inside Docker sandbox (default: on)")
+@click.option("--output", "-o", default=None, help="Write report to file instead of stdout")
+def compare(provider_a, provider_b, docker, output):
+    """Run two providers head-to-head and show a side-by-side comparison.
+
+    Example: python main.py compare openai claude
+    """
+    import os
+    from pathlib import Path
+    from datetime import datetime
+    from orchestrator import run_comparison
+    from report.generator import generate_comparison_report
+
+    click.echo(f"Running {provider_a} vs {provider_b} (docker={docker}) ...")
+    click.echo(f"  [{provider_a}] generating and evaluating...")
+    report = run_comparison(provider_a, provider_b, use_docker=docker)
+
+    click.echo("Generating comparison report...")
+    content = generate_comparison_report(
+        metrics_a=report.metrics_a,
+        metrics_b=report.metrics_b,
+        aggregate_a=report.aggregate_a,
+        aggregate_b=report.aggregate_b,
+        provider_a=report.provider_a,
+        provider_b=report.provider_b,
+        model_a=report.model_a,
+        model_b=report.model_b,
+    )
+
+    reports_dir = Path(__file__).parent / "reports"
+    reports_dir.mkdir(exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    if not output:
+        output = str(reports_dir / f"compare_{provider_a}_vs_{provider_b}_{timestamp}.txt")
+
+    with open(output, "w", encoding="utf-8") as f:
+        f.write(content)
+
+    click.echo(f"\nReport saved to: {output}\n")
+    click.echo(content)
+
+
 if __name__ == "__main__":
     cli()

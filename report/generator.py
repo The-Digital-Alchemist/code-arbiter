@@ -332,6 +332,106 @@ def _generate_llm_insights(
         )
 
 
+def generate_comparison_report(
+    metrics_a: List[TaskMetrics],
+    metrics_b: List[TaskMetrics],
+    aggregate_a: "AggregateMetrics",
+    aggregate_b: "AggregateMetrics",
+    provider_a: str,
+    provider_b: str,
+    model_a: str,
+    model_b: str,
+) -> str:
+    """
+    Generate a side-by-side comparison report for two providers.
+    """
+    by_task_a = {m.task_id: m for m in metrics_a}
+    by_task_b = {m.task_id: m for m in metrics_b}
+    all_tasks = sorted(set(by_task_a) | set(by_task_b))
+
+    col_a = f"{model_a}"[:22]
+    col_b = f"{model_b}"[:22]
+    task_w = max(len(t) for t in all_tasks) + 2
+
+    header_a = col_a.center(26)
+    header_b = col_b.center(26)
+
+    lines = [
+        _divider("="),
+        "  COMPARISON REPORT",
+        _divider("="),
+        "",
+        f"  {'Task':<{task_w}}  {header_a}  {header_b}  {'Diff'}",
+        f"  {'-'*task_w}  {'-'*26}  {'-'*26}  {'-'*4}",
+    ]
+
+    wins_a = wins_b = ties = 0
+
+    for task_id in all_tasks:
+        ma = by_task_a.get(task_id)
+        mb = by_task_b.get(task_id)
+
+        def cell(m: TaskMetrics | None) -> str:
+            if m is None:
+                return "N/A".ljust(26)
+            if m.passed:
+                return f"PASS  {m.latency_ms:.0f}ms".ljust(26)
+            return f"FAIL  [{m.failure_type}]".ljust(26)
+
+        a_pass = ma.passed if ma else False
+        b_pass = mb.passed if mb else False
+
+        if a_pass and not b_pass:
+            diff = "A >"
+            wins_a += 1
+        elif b_pass and not a_pass:
+            diff = "< B"
+            wins_b += 1
+        else:
+            diff = " = "
+            ties += 1
+
+        lines.append(f"  {task_id:<{task_w}}  {cell(ma)}  {cell(mb)}  {diff}")
+
+    lines += [
+        "",
+        _divider(),
+        "",
+        f"  {'Model':<{task_w}}  {model_a:<26}  {model_b:<26}",
+        f"  {'Pass rate':<{task_w}}  {aggregate_a.pass_rate:.1%} ({aggregate_a.passed_tasks}/{aggregate_a.total_tasks})".ljust(task_w + 30) + f"  {aggregate_b.pass_rate:.1%} ({aggregate_b.passed_tasks}/{aggregate_b.total_tasks})",
+        f"  {'Avg latency':<{task_w}}  {aggregate_a.average_latency_ms:.0f}ms".ljust(task_w + 30) + f"  {aggregate_b.average_latency_ms:.0f}ms",
+        "",
+        f"  Tasks where {provider_a} wins: {wins_a}",
+        f"  Tasks where {provider_b} wins: {wins_b}",
+        f"  Tied:                    {ties}",
+        "",
+    ]
+
+    # Per-task failure notes for tasks where they differ
+    diffs = [
+        t for t in all_tasks
+        if by_task_a.get(t) and by_task_b.get(t)
+        and by_task_a[t].passed != by_task_b[t].passed
+    ]
+    if diffs:
+        lines += [_divider(), "", "  DIVERGENT TASKS", ""]
+        for task_id in diffs:
+            ma, mb = by_task_a[task_id], by_task_b[task_id]
+            winner = provider_a if ma.passed else provider_b
+            loser_m = mb if ma.passed else ma
+            cat, desc = _classify_refined(loser_m.failed_tests, task_id)
+            lines += [
+                f"  {task_id}",
+                f"    {winner} passed — {provider_b if winner == provider_a else provider_a} failed",
+                f"    Failure category: {cat}",
+                f"    {desc}",
+                "",
+            ]
+
+    lines.append(_divider("="))
+    return "\n".join(lines)
+
+
 def generate_report(
     task_metrics: List[TaskMetrics],
     aggregate: AggregateMetrics,

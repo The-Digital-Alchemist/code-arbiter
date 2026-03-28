@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Dict, List, Tuple
@@ -16,6 +17,18 @@ from metrics.engine import (
     compute_task_metrics,
     compute_aggregate,
 )
+
+
+@dataclass
+class ComparisonReport:
+    provider_a: str
+    provider_b: str
+    model_a: str
+    model_b: str
+    metrics_a: List[TaskMetrics]
+    metrics_b: List[TaskMetrics]
+    aggregate_a: AggregateMetrics
+    aggregate_b: AggregateMetrics
 
 
 def run_stub(dataset_name: str | None = None) -> List[GeneratedSolution]:
@@ -174,4 +187,35 @@ def run_multi(
         runs_per_task=runs,
         task_pass_rates=task_pass_rates,
         overall_pass_rate=total_passes / total_runs if total_runs else 0.0,
+    )
+
+
+def run_comparison(
+    provider_a: str,
+    provider_b: str,
+    dataset_name: str | None = None,
+    use_docker: bool = False,
+) -> ComparisonReport:
+    """
+    Run both providers against the same task set and return aligned results.
+
+    Example:
+        report = run_comparison("openai", "claude")
+    """
+    _model_env = {"openai": "OPENAI_MODEL", "claude": "CLAUDE_MODEL", "local": "LOCAL_MODEL_NAME"}
+    model_a = os.environ.get(_model_env.get(provider_a, ""), provider_a)
+    model_b = os.environ.get(_model_env.get(provider_b, ""), provider_b)
+
+    metrics_a, aggregate_a = run_provider_with_metrics(provider_a, dataset_name, use_docker)
+    metrics_b, aggregate_b = run_provider_with_metrics(provider_b, dataset_name, use_docker)
+
+    return ComparisonReport(
+        provider_a=provider_a,
+        provider_b=provider_b,
+        model_a=model_a,
+        model_b=model_b,
+        metrics_a=metrics_a,
+        metrics_b=metrics_b,
+        aggregate_a=aggregate_a,
+        aggregate_b=aggregate_b,
     )
