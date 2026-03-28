@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from statistics import mean
 from typing import Iterable, List
 
-from generation.base import GenerationMetadata
+from generation.base import GenerationMetadata, GeneratedSolution
 from runner.local_runner import TestRunResult
 
 
@@ -19,6 +19,8 @@ class TaskMetrics:
     latency_ms: float
     exit_code: int
     failure_type: str = "none"
+    generated_code: str = ""
+    test_output: str = ""
 
     @property
     def passed(self) -> bool:
@@ -34,10 +36,11 @@ class AggregateMetrics:
 
 
 def compute_task_metrics(
-    results: Iterable[tuple[GenerationMetadata, TestRunResult]]
+    results: Iterable[tuple[GeneratedSolution, TestRunResult]]
 ) -> List[TaskMetrics]:
     metrics: List[TaskMetrics] = []
-    for meta, test in results:
+    for solution, test in results:
+        meta = solution.metadata
         metrics.append(
             TaskMetrics(
                 task_id=test.task_id,
@@ -49,6 +52,8 @@ def compute_task_metrics(
                 latency_ms=meta.latency_ms,
                 exit_code=test.exit_code,
                 failure_type=test.failure_type,
+                generated_code=solution.code,
+                test_output=test.stdout + test.stderr,
             )
         )
     return metrics

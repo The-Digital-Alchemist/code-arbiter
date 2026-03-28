@@ -286,22 +286,32 @@ def _generate_llm_insights(
     from generation.base import GeneratedSolution, GenerationMetadata
     from dataset.manager import Task
 
-    failure_summary = "\n".join(
-        f"- Task: {f.task_id}\n"
-        f"  Failing tests: {', '.join(f.failed_tests)}\n"
-        f"  Failure type: {f.failure_type}\n"
-        f"  Passed {f.tests_passed} of {f.tests_passed + f.tests_failed} tests"
-        for f in failures
-    )
+    failure_blocks = []
+    for f in failures:
+        # Truncate test output to keep prompt size reasonable
+        output_snippet = (f.test_output or "")[:2000]
+        code_snippet = (f.generated_code or "")[:1500]
+        block = (
+            f"=== Task: {f.task_id} ===\n"
+            f"Failure type: {f.failure_type}\n"
+            f"Tests passed: {f.tests_passed} / {f.tests_passed + f.tests_failed}\n"
+            f"Failing tests: {', '.join(f.failed_tests)}\n\n"
+            f"--- Generated code ---\n{code_snippet}\n\n"
+            f"--- Pytest output ---\n{output_snippet}\n"
+        )
+        failure_blocks.append(block)
+
+    failure_detail = "\n".join(failure_blocks)
 
     prompt = (
-        f"You are analyzing the results of an AI coding benchmark.\n\n"
-        f"The model failed the following tasks:\n\n{failure_summary}\n\n"
-        f"In 3-5 sentences, explain:\n"
-        f"1. What specific reasoning failure caused each error\n"
-        f"2. Whether this is a systematic weakness or isolated failure\n"
-        f"3. What this reveals about the model's capabilities\n\n"
-        f"Be specific and technical. Do not repeat the test names verbatim."
+        f"You are analyzing the results of an AI coding benchmark. "
+        f"For each failing task you are given the code the model wrote and the full pytest output.\n\n"
+        f"{failure_detail}\n\n"
+        f"For each failed task, explain in 2-4 sentences:\n"
+        f"1. The specific bug in the generated code (reference the actual code)\n"
+        f"2. The reasoning failure that caused it (e.g. off-by-one, missed edge case, wrong algorithm)\n"
+        f"3. Whether this looks systematic across tasks or isolated\n\n"
+        f"Be precise and technical. Cite specific lines or variable names where relevant."
     )
 
     try:

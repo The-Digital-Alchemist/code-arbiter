@@ -64,8 +64,8 @@ def _run_and_evaluate(
         result = runner.run(solution) if runner else run_tests_for_solution(solution)
         paired.append((solution, result))
 
-    meta_and_tests = [(s.metadata, r) for s, r in paired]
-    task_metrics = compute_task_metrics(meta_and_tests)
+    solution_and_tests = [(s, r) for s, r in paired]
+    task_metrics = compute_task_metrics(solution_and_tests)
     aggregate = compute_aggregate(task_metrics)
     return task_metrics, aggregate
 
@@ -145,7 +145,7 @@ def run_multi(
             solution = generator.generate(task)
             test_result = runner.run(solution) if runner else run_tests_for_solution(solution)
             from metrics.engine import compute_task_metrics
-            metrics = compute_task_metrics([(solution.metadata, test_result)])
+            metrics = compute_task_metrics([(solution, test_result)])
             results_by_task[task.task_id].extend(metrics)
 
     task_pass_rates: List[TaskPassRate] = []
