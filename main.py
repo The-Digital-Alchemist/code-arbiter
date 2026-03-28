@@ -162,43 +162,56 @@ def multi(provider, runs, docker, json_output):
 @click.option("--docker/--no-docker", default=True, help="Run tests inside Docker sandbox (default: on)")
 @click.option("--insights", default=None, help="Provider to use for LLM-generated insights (optional)")
 @click.option("--output", "-o", default=None, help="Write report to file instead of stdout")
-def report(provider, docker, insights, output):
+@click.option("--html", "html_output", is_flag=True, default=False, help="Generate an HTML report instead of plain text")
+def report(provider, docker, insights, output, html_output):
     """Run all tasks and generate a full benchmark report."""
+    import os
+    from pathlib import Path
+    from datetime import datetime
     from orchestrator import run_provider_with_metrics
     from report.generator import generate_report
 
     click.echo(f"Running benchmark with provider={provider or 'stub'} docker={docker} ...")
     task_metrics, aggregate = run_provider_with_metrics(provider, use_docker=docker)
 
-    # Derive model name from env vars matching the provider, fall back to provider label
-    import os
     _model_env = {"openai": "OPENAI_MODEL", "claude": "CLAUDE_MODEL", "local": "LOCAL_MODEL_NAME"}
     model_name = os.environ.get(_model_env.get(provider or "", ""), provider or "stub")
 
     click.echo("Generating report...")
-    text = generate_report(
-        task_metrics=task_metrics,
-        aggregate=aggregate,
-        provider=provider or "stub",
-        model_name=model_name,
-        insights_provider=insights,
-    )
 
-    import os
-    from pathlib import Path
-    from datetime import datetime
+    reports_dir = Path(__file__).parent / "reports"
+    reports_dir.mkdir(exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    safe_model = model_name.replace("/", "-").replace(":", "-")
+
+    if html_output:
+        from report.html_generator import generate_html_report
+        content = generate_html_report(
+            task_metrics=task_metrics,
+            aggregate=aggregate,
+            provider=provider or "stub",
+            model_name=model_name,
+        )
+        ext = "html"
+    else:
+        content = generate_report(
+            task_metrics=task_metrics,
+            aggregate=aggregate,
+            provider=provider or "stub",
+            model_name=model_name,
+            insights_provider=insights,
+        )
+        ext = "txt"
 
     if not output:
-        reports_dir = Path(__file__).parent / "reports"
-        reports_dir.mkdir(exist_ok=True)
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        safe_model = model_name.replace("/", "-").replace(":", "-")
-        output = str(reports_dir / f"report_{provider or 'stub'}_{safe_model}_{timestamp}.txt")
+        output = str(reports_dir / f"report_{provider or 'stub'}_{safe_model}_{timestamp}.{ext}")
 
     with open(output, "w", encoding="utf-8") as f:
-        f.write(text)
+        f.write(content)
     click.echo(f"\nReport saved to: {output}")
-    click.echo("\n" + text)
+
+    if not html_output:
+        click.echo("\n" + content)
 
 
 if __name__ == "__main__":
