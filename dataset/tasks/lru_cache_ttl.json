@@ -1,0 +1,9 @@
+{
+  "task_id": "lru_cache_ttl",
+  "description": "Implement a LRUCacheTTL class with __init__(self, capacity: int, ttl: float) where ttl is the time-to-live in seconds. Implement get(self, key, current_time: float) which returns the value or -1 if the key is missing or expired. Implement put(self, key, value, current_time: float) which inserts/updates the key with a fresh TTL. When capacity is exceeded, evict the least recently used non-expired entry first; if all entries are non-expired and capacity is full, evict the LRU one. Expired entries must not be returned by get and must not count toward capacity (lazy eviction on access is acceptable).",
+  "language": "python",
+  "test_file": "test_lru_cache_ttl.py",
+  "timeout": 10,
+  "docker_image": "eval-engine-python:latest",
+  "task_type": "implement"
+}

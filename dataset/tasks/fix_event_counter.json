@@ -1,0 +1,9 @@
+{
+  "task_id": "fix_event_counter",
+  "description": "The following function has a bug. Fix it.\n\n```python\ndef count_events_in_window(events: list[int], window: int) -> int:\n    \"\"\"\n    Given a sorted list of event timestamps (unix seconds) and a window size,\n    return the maximum number of events that fall within any window of exactly\n    `window` seconds (i.e., [t, t + window] inclusive on both ends).\n    \"\"\"\n    max_count = 0\n    for i in range(len(events)):\n        count = 0\n        for j in range(len(events)):\n            if events[j] - events[i] <= window:\n                count += 1\n        max_count = max(max_count, count)\n    return max_count\n```\n\nThe function has two bugs: it is O(n^2) and it counts events before the window start. Fix both. Use a sliding window approach for O(n) time. Name the fixed function count_events_in_window.",
+  "language": "python",
+  "test_file": "test_fix_event_counter.py",
+  "timeout": 10,
+  "docker_image": "eval-engine-python:latest",
+  "task_type": "fix"
+}

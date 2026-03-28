@@ -1,0 +1,9 @@
+{
+  "task_id": "expr_parser",
+  "description": "Implement evaluate(expr: str) -> int that evaluates a mathematical expression string containing non-negative integers, +, -, *, / (integer division, truncate toward zero), and parentheses. Operator precedence must be respected: * and / before + and -. Parentheses override precedence. No spaces in input. No unary minus. All intermediate results and inputs fit in a 32-bit signed integer. Do not use eval().",
+  "language": "python",
+  "test_file": "test_expr_parser.py",
+  "timeout": 10,
+  "docker_image": "eval-engine-python:latest",
+  "task_type": "implement"
+}

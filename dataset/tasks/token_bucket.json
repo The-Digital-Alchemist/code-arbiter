@@ -1,0 +1,9 @@
+{
+  "task_id": "token_bucket",
+  "description": "Implement a token bucket rate limiter. Create a class TokenBucket with __init__(self, capacity: int, refill_rate: float) where capacity is the max tokens and refill_rate is tokens added per second. Implement consume(self, tokens: int, current_time: float) -> bool that returns True if the request is allowed (and consumes the tokens), False otherwise. Tokens refill continuously based on elapsed time since last consume call — do not refill beyond capacity. Do not use any time or threading imports; current_time is always passed in.",
+  "language": "python",
+  "test_file": "test_token_bucket.py",
+  "timeout": 10,
+  "docker_image": "eval-engine-python:latest",
+  "task_type": "implement"
+}

@@ -1,0 +1,9 @@
+{
+  "task_id": "dependency_resolver",
+  "description": "Implement resolve_order(tasks: dict[str, list[str]]) -> list[str]. The input is a mapping from task name to its list of dependencies (tasks that must run before it). Return a valid execution order (topological sort) where all dependencies of a task appear before it. If there is a cycle, raise ValueError('cycle detected'). If multiple valid orderings exist, any valid one is accepted.",
+  "language": "python",
+  "test_file": "test_dependency_resolver.py",
+  "timeout": 10,
+  "docker_image": "eval-engine-python:latest",
+  "task_type": "implement"
+}

@@ -1,0 +1,9 @@
+{
+  "task_id": "retry_backoff",
+  "description": "Implement compute_backoff_delays(max_retries: int, base_delay: float, max_delay: float, jitter: float) -> list[float]. Returns a list of delay values (in seconds) of length max_retries. Each delay follows exponential backoff: delay_i = min(base_delay * (2 ** i), max_delay), then add a jitter term uniformly sampled from [-jitter, +jitter]. The final delay must be clamped to [0, max_delay] after jitter is applied — it must never be negative or exceed max_delay. Use random.uniform for jitter with seed 42 set once at the start of the function via random.seed(42).",
+  "language": "python",
+  "test_file": "test_retry_backoff.py",
+  "timeout": 10,
+  "docker_image": "eval-engine-python:latest",
+  "task_type": "implement"
+}

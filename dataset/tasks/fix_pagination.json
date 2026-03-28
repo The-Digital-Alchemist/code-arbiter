@@ -1,0 +1,9 @@
+{
+  "task_id": "fix_pagination",
+  "description": "The following function has a bug. Fix it.\n\n```python\ndef paginate(items: list, page: int, page_size: int) -> list:\n    \"\"\"Return the items for the given 1-indexed page.\"\"\"\n    start = page * page_size\n    end = start + page_size\n    return items[start:end]\n```\n\nThe function should return the correct slice for the given 1-indexed page number. Page 1 returns items[0:page_size], page 2 returns items[page_size:2*page_size], etc. Return an empty list if the page is out of range. Name the fixed function paginate.",
+  "language": "python",
+  "test_file": "test_fix_pagination.py",
+  "timeout": 10,
+  "docker_image": "eval-engine-python:latest",
+  "task_type": "fix"
+}
