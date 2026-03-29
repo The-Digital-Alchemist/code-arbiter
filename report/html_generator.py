@@ -411,13 +411,33 @@ def generate_html_comparison_report(
     """
 
     # --- Comparison table ---
+    import html as _html
+
     def cell(m: Optional[TaskMetrics]) -> str:
         if m is None:
             return '<span style="color:#334155;">N/A</span>'
+        code = _html.escape(m.generated_code or "(no code captured)")
+        output = _html.escape((m.test_output or "(no output captured)")[:2000])
         if m.passed:
-            return f'<span class="badge badge-pass">PASS</span> <span style="color:#64748b;font-size:11px;">{m.latency_ms:.0f}ms</span>'
-        category, _ = _classify_refined(m.failed_tests, m.task_id)
-        return f'<span class="badge badge-fail">FAIL</span> <span class="pill">{category}</span>'
+            badge = f'<span class="badge badge-pass">PASS</span> <span style="color:#64748b;font-size:11px;">{m.latency_ms:.0f}ms</span>'
+            summary_label = "view code"
+            output_block = ""
+        else:
+            category, _ = _classify_refined(m.failed_tests, m.task_id)
+            badge = f'<span class="badge badge-fail">FAIL</span> <span class="pill">{category}</span>'
+            summary_label = "view code + output"
+            output_block = f"""
+            <div style="font-size:10px;color:#94a3b8;margin:8px 0 3px;text-transform:uppercase;letter-spacing:0.5px;">Test Output</div>
+            <pre style="background:#0d0f1a;border:1px solid #450a0a;border-radius:4px;padding:8px;font-size:10px;color:#fca5a5;overflow-x:auto;white-space:pre-wrap;word-break:break-all;max-height:200px;">{output}</pre>"""
+        return f"""{badge}
+        <details style="margin-top:6px;">
+          <summary style="cursor:pointer;font-size:10px;color:#475569;user-select:none;">{summary_label}</summary>
+          <div style="margin-top:6px;">
+            <div style="font-size:10px;color:#94a3b8;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.5px;">Generated Code</div>
+            <pre style="background:#0d0f1a;border:1px solid #2d3148;border-radius:4px;padding:8px;font-size:10px;color:#e2e8f0;overflow-x:auto;white-space:pre-wrap;word-break:break-all;max-height:200px;">{code}</pre>
+            {output_block}
+          </div>
+        </details>"""
 
     rows = []
     for task_id in all_tasks:
@@ -438,10 +458,10 @@ def generate_html_comparison_report(
 
         rows.append(f"""
         <tr {row_style}>
-          <td style="font-family:monospace;font-size:12px;color:#cbd5e1;">{task_id}</td>
-          <td>{cell(ma)}</td>
-          <td>{cell(mb)}</td>
-          <td>{diff}</td>
+          <td style="font-family:monospace;font-size:12px;color:#cbd5e1;vertical-align:top;">{task_id}</td>
+          <td style="vertical-align:top;">{cell(ma)}</td>
+          <td style="vertical-align:top;">{cell(mb)}</td>
+          <td style="vertical-align:top;">{diff}</td>
         </tr>""")
 
     table_html = f"""
